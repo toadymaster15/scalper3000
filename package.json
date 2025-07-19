@@ -1,0 +1,17 @@
+{
+  "name": "price-bot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "node-cron": "^3.0.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
