@@ -2,12 +2,6 @@ const Discord = require('discord.js');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (req, res) => res.send('Empik Bot is running!'));
-app.listen(PORT, () => console.log(`Health check server on port ${PORT}`));
 
 const client = new Discord.Client({ 
   intents: [
@@ -69,28 +63,70 @@ async function searchEmpik(query) {
     });
     
     const $ = cheerio.load(response.data);
+    
+    // Debug: Log what we actually got
+    console.log('Response status:', response.status);
+    console.log('Page title:', $('title').text());
+    console.log('Page contains "minecraft":', response.data.toLowerCase().includes('minecraft'));
+    console.log('Found elements with "product":', $('[class*="product"]').length);
+    
     const results = [];
     
-    // Extract search results (selectors may need adjustment)
-    $('.search-result-item, .product-item').each((i, elem) => {
+    // Try multiple possible selectors
+    const possibleSelectors = [
+      '.search-result-item',
+      '.product-item', 
+      '.product-card',
+      '.search-item',
+      '[data-testid*="product"]',
+      '.productCard',
+      '.item-product'
+    ];
+    
+    let foundElements = 0;
+    possibleSelectors.forEach(selector => {
+      const count = $(selector).length;
+      if (count > 0) {
+        console.log(`Found ${count} elements with selector: ${selector}`);
+        foundElements += count;
+      }
+    });
+    
+    if (foundElements === 0) {
+      console.log('No product elements found with common selectors');
+      // Log first 1000 chars of HTML to see structure
+      console.log('HTML preview:', response.data.substring(0, 1000));
+    }
+    
+    // Extract search results (try common patterns)
+    $('.search-result-item, .product-item, .product-card, .search-item, [class*="product"]').each((i, elem) => {
       if (i >= 5) return; // Limit to 5 results
       
-      const title = $(elem).find('.product-title, .product-name').text().trim();
-      const price = $(elem).find('.price-current, .price').text().trim();
-      const link = $(elem).find('a').attr('href');
+      const $elem = $(elem);
+      const title = $elem.find('.product-title, .product-name, [class*="title"], h2, h3').text().trim();
+      const price = $elem.find('.price-current, .price, [class*="price"]').text().trim();
+      const link = $elem.find('a').attr('href') || $elem.closest('a').attr('href');
       
-      if (title && price && link) {
+      console.log(`Item ${i}: title="${title}", price="${price}", link="${link}"`);
+      
+      if (title && link) {
         results.push({
           title,
-          price: price.replace(/[^\d,]/g, '').replace(',', '.') + ' PLN',
+          price: price || 'Price not found',
           url: link.startsWith('http') ? link : `https://www.empik.com${link}`
         });
       }
     });
     
+    console.log(`Final results count: ${results.length}`);
     return results;
   } catch (error) {
-    console.error('Search error:', error.message);
+    console.error('Search error details:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      url: error.config?.url
+    });
     return [];
   }
 }
