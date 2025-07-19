@@ -2,6 +2,26 @@ const Discord = require('discord.js');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+// Simple health check endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'Bot is running!',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', bot: client.user?.tag || 'not ready' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Health server running on port ${PORT}`);
+});
 
 const client = new Discord.Client({ 
   intents: [
