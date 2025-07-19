@@ -2,6 +2,12 @@ const Discord = require('discord.js');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => res.send('Empik Bot is running!'));
+app.listen(PORT, () => console.log(`Health check server on port ${PORT}`));
 
 const client = new Discord.Client({ 
   intents: [
