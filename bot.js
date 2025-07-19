@@ -103,9 +103,37 @@ async function searchEmpik(query) {
       if (i >= 5) return; // Limit to 5 results
       
       const $elem = $(elem);
-      const title = $elem.find('.product-title, .product-name, [class*="title"], h2, h3').text().trim();
-      const price = $elem.find('.price-current, .price, [class*="price"]').text().trim();
+      let title = $elem.find('.product-title, .product-name, [class*="title"], h2, h3').text().trim();
+      let price = $elem.find('.price-current, .price, [class*="price"]').text().trim();
       const link = $elem.find('a').attr('href') || $elem.closest('a').attr('href');
+      
+      // Clean up title (remove duplicates)
+      if (title) {
+        const words = title.split(' ');
+        const halfLength = Math.floor(words.length / 2);
+        const firstHalf = words.slice(0, halfLength).join(' ');
+        const secondHalf = words.slice(halfLength).join(' ');
+        
+        // If first half equals second half, it's duplicated
+        if (firstHalf === secondHalf && firstHalf.length > 0) {
+          title = firstHalf;
+        }
+      }
+      
+      // Clean up price (remove "Megacena", extra spaces, etc.)
+      if (price) {
+        price = price
+          .replace(/Megacena/gi, '')
+          .replace(/Promocja/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        // Extract just the price with currency
+        const priceMatch = price.match(/[\d,]+\s*zł/);
+        if (priceMatch) {
+          price = priceMatch[0];
+        }
+      }
       
       console.log(`Item ${i}: title="${title}", price="${price}", link="${link}"`);
       
@@ -176,8 +204,8 @@ client.on('messageCreate', async (message) => {
         results.forEach((result, i) => {
           embed.addFields({
             name: `${i + 1}. ${result.title}`,
-            value: `Price: ${result.price}\n[View Product](${result.url})`,
-            inline: false
+            value: `💰 **${result.price}**\n🔗 [View on Empik](${result.url})`,
+            inline: true
           });
         });
         
