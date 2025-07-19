@@ -20,8 +20,12 @@ async function scrapeEmpikProduct(url) {
   try {
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br'
+      },
+      timeout: 10000
     });
     
     const $ = cheerio.load(response.data);
@@ -47,11 +51,15 @@ async function scrapeEmpikProduct(url) {
 // Helper function to search Empik
 async function searchEmpik(query) {
   try {
-    const searchUrl = `https://www.empik.com/szukaj?q=${encodeURIComponent(query)}`;
+    const searchUrl = `https://www.empik.com/szukaj/produkt?q=${encodeURIComponent(query)}`;
     const response = await axios.get(searchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br'
+      },
+      timeout: 10000
     });
     
     const $ = cheerio.load(response.data);
